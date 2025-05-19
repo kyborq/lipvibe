@@ -8,7 +8,7 @@ from analysis.lip_filter import apply_lipstick
 initialize_database()
 
 # 1) Извлечение лица
-img_path = "подопытный_2.jpg"
+img_path = "test_subject_4.jpg"
 img      = Image.open(img_path).convert("RGB")
 face_img = crop_face(img)
 

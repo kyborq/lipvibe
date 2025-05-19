@@ -13,5 +13,10 @@ def get_all_shades():
     all_seasons = ["Winter", "Spring", "Summer", "Autumn"]
     shades = []
     for season in all_seasons:
-        shades.extend(get_palette(season))
+        season_shades = get_palette(season)
+        # Убедимся, что у каждого оттенка есть информация о сезоне
+        for shade in season_shades:
+            if "season" not in shade:
+                shade["season"] = season
+        shades.extend(season_shades)
     return shades

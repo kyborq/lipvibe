@@ -52,7 +52,7 @@ def get_lipsticks_by_season(season: str):
     cursor = conn.cursor()
     
     cursor.execute('''
-        SELECT name, hex, brand
+        SELECT name, hex, brand, season
         FROM lipsticks
         WHERE season = ?
     ''', (season,))
@@ -60,4 +60,5 @@ def get_lipsticks_by_season(season: str):
     results = cursor.fetchall()
     conn.close()
     
-    return [{"name": name, "hex": hex, "brand": brand} for name, hex, brand in results]
+    return [{"name": name, "hex": hex, "brand": brand, "season": season} 
+            for name, hex, brand, season in results]
