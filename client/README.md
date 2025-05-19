@@ -1,47 +1,62 @@
-# Astro Starter Kit: Minimal
+# LipVibe Клиент
 
-```sh
-npm create astro@latest -- --template minimal
+## Описание
+
+LipVibe - это веб-приложение для анализа цветовых характеристик губ с фотографий и подбора подходящей губной помады. Приложение анализирует цветовую гамму губ и рекомендует наиболее подходящие оттенки помады и бренды. Клиентская часть построена с использованием Astro.js и TypeScript.
+
+## Требования
+
+- Node.js (версия 18 или выше)
+- npm (версия 9 или выше)
+
+## Установка
+
+1. Перейдите в директорию клиента:
+
+```bash
+cd client
 ```
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/minimal)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/minimal)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/minimal/devcontainer.json)
+2. Установите зависимости:
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+```bash
+npm install
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## Запуск приложения
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+Для запуска в режиме разработки:
 
-Any static assets, like images, can be placed in the `public/` directory.
+```bash
+npm run dev
+```
 
-## 🧞 Commands
+Приложение будет доступно по адресу: `http://localhost:4321`
 
-All commands are run from the root of the project, from a terminal:
+## Сборка для продакшена
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Для создания продакшен-сборки:
 
-## 👀 Want to learn more?
+```bash
+npm run build
+```
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Для предварительного просмотра продакшен-сборки:
+
+```bash
+npm run preview
+```
+
+## Структура проекта
+
+- `src/` - исходный код приложения
+- `public/` - статические файлы
+- `astro.config.mjs` - конфигурация Astro
+- `tsconfig.json` - конфигурация TypeScript
+
+## Технологии
+
+- Astro.js
+- TypeScript
+- TailwindCSS
+- React (для интерактивных компонентов)
