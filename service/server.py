@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import JSONResponse, FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import os
@@ -12,6 +13,15 @@ from analysis.lip_filter import apply_lipstick
 from database.schema import initialize_database
 
 app = FastAPI(title="LipVibe API", description="API for lipstick recommendations and virtual try-on")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4321"],  # Astro dev server default port
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Создаем директорию для временных файлов
 TEMP_DIR = "temp"
