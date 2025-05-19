@@ -65,7 +65,7 @@ source venv/bin/activate
 python app.py
 ```
 
-Сервер будет доступен по адресу: `http://localhost:5000`
+Сервер будет доступен по адресу: `http://localhost:8000`
 
 #### Запуск клиента
 
