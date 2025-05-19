@@ -4,12 +4,12 @@ import Layout from "../layouts/Layout.astro";
 
 ---
 
-<Layout title="Analyze Your Skin Tone - LipVibe">
+<Layout title="Анализ вашего цвета кожи - LipVibe">
   <div class="container">
     <div class="text-center mt-12">
-      <h1>Analyze Your Skin Tone</h1>
+      <h1>Анализ вашего цвета кожи</h1>
       <p class="mt-4" style="color: var(--text-light);">
-        Upload a photo of yourself in natural lighting for the most accurate results
+        Загрузите фотографию вас в естественном освещении для наиболее точных результатов
       </p>
     </div>
 
@@ -17,29 +17,29 @@ import Layout from "../layouts/Layout.astro";
       <!-- Upload Section -->
       <div class="card">
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <div id="drop-zone" style="border: 2px dashed #e5e7eb; border-radius: 0.5rem; padding: 2rem; text-align: center;">
+          <div id="drop-zone" style="border: 2px dashed #e5e7eb; border-radius: 24px; padding: 2rem; text-align: center;">
             <div id="preview-container" style="display: none; margin-bottom: 1rem;">
-              <img id="image-preview" style="max-width: 100%; max-height: 300px; border-radius: 0.5rem;" />
+              <img id="image-preview" style="max-width: 100%; max-height: 300px; border-radius: 24px;" />
             </div>
             <svg id="upload-icon" style="width: 3rem; height: 3rem; color: var(--text-light); margin: 0 auto;" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             <div style="margin-top: 1rem;">
               <label for="file-upload" style="color: var(--primary-color); cursor: pointer; font-weight: 500;">
-                Upload a photo
+                Загрузите фото
                 <input id="file-upload" name="file-upload" type="file" style="display: none;" accept="image/*">
               </label>
-              <p style="color: var(--text-light); margin-top: 0.5rem;">or drag and drop</p>
-              <p style="color: var(--text-light); font-size: 0.75rem; margin-top: 0.5rem;">PNG, JPG, GIF up to 10MB</p>
+              <p style="color: var(--text-light); margin-top: 0.5rem;">или перетащите и отпустите</p>
+              <p style="color: var(--text-light); font-size: 0.75rem; margin-top: 0.5rem;">PNG, JPG, GIF до 10MB</p>
             </div>
           </div>
-          <button type="button" class="btn btn-primary" id="analyze-btn">Analyze Photo</button>
+          <button type="button" class="btn btn-primary" id="analyze-btn">Анализ фото</button>
         </div>
       </div>
 
       <!-- Results Section -->
       <div class="card">
-        <h3>Recommended Lipsticks</h3>
+        <h3>Рекомендуемые цвета губ</h3>
         <div id="results-container" style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
           <!-- Results will be populated here -->
         </div>
@@ -52,14 +52,21 @@ import Layout from "../layouts/Layout.astro";
   interface Recommendation {
     name: string;
     brand: string;
-    color: string;
-    matchScore: number;
+    color?: string;
+    hex?: string;
+    matchScore?: number;
+    score?: number;
+  }
+
+  interface ColorData {
+    name: string;
+    hex: string;
   }
 
   interface Analysis {
     color_type: string;
-    skin_color: string;
-    hair_color: string;
+    skin_color: ColorData | string;
+    hair_color: ColorData | string;
     metrics: any;
   }
 
@@ -102,7 +109,7 @@ import Layout from "../layouts/Layout.astro";
     analyzeBtn.addEventListener('click', async () => {
       const file = fileInput.files?.[0];
       if (!file) {
-        alert('Please select an image first');
+        alert('Пожалуйста, выберите изображение');
         return;
       }
 
@@ -111,7 +118,7 @@ import Layout from "../layouts/Layout.astro";
 
       try {
         analyzeBtn.disabled = true;
-        analyzeBtn.textContent = 'Analyzing...';
+        analyzeBtn.textContent = 'Анализ...';
 
         const response = await fetch(`${API_URL}/analyze`, {
           method: 'POST',
@@ -123,28 +130,62 @@ import Layout from "../layouts/Layout.astro";
         }
 
         const data = await response.json() as AnalysisResponse;
+        console.log('Analysis data:', data);
+        
+        if (!data.analysis) {
+          console.error('No analysis data received');
+          return;
+        }
         
         // Update the results section with the response
         const resultsHtml = data.recommendations.map((rec: Recommendation) => `
           <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background-color: var(--background); border-radius: 0.5rem;">
-            <div style="width: 3rem; height: 3rem; border-radius: 9999px; background-color: ${rec.color}"></div>
+            <div style="width: 3rem; height: 3rem; border-radius: 9999px; background-color: ${rec.color || rec.hex || '#000000'}; border: 1px solid var(--border-color);"></div>
             <div style="flex: 1;">
               <p style="font-weight: 500;">${rec.name}</p>
               <p style="color: var(--text-light);">${rec.brand}</p>
             </div>
             <span style="background-color: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem;">
-              ${rec.matchScore}% Match
+              ${Math.round((rec.matchScore || rec.score || 0) * 100)}% совпадение
             </span>
           </div>
         `).join('');
 
         // Add analysis information
         const analysisHtml = `
-          <div style="margin-top: 1.5rem; padding: 1rem; background-color: var(--background); border-radius: 0.5rem;">
-            <h4 style="margin-bottom: 0.5rem;">Analysis Results</h4>
-            <p><strong>Color Type:</strong> ${data.analysis.color_type}</p>
-            <p><strong>Skin Color:</strong> ${data.analysis.skin_color}</p>
-            <p><strong>Hair Color:</strong> ${data.analysis.hair_color}</p>
+          <div style="margin-top: 1.5rem; padding: 1.5rem; background-color: var(--background); border-radius: 0.5rem;">
+            <h4 style="margin-bottom: 1rem; font-size: 1.25rem;">Результаты анализа</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+              <div style="text-align: center; padding: 1rem; background-color: var(--background-secondary); border-radius: 0.5rem;">
+                <div style="width: 4rem; height: 4rem; border-radius: 9999px; background-color: ${typeof data.analysis.skin_color === 'string' ? data.analysis.skin_color : data.analysis.skin_color?.hex || '#F5D0C5'}; border: 2px solid var(--border-color); margin: 0 auto;"></div>
+                <p style="margin-top: 1rem; font-weight: 600;">Цвет кожи</p>
+                <p style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">${typeof data.analysis.skin_color === 'string' ? data.analysis.skin_color : data.analysis.skin_color?.name || 'Не обнаружен'}</p>
+                <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.5rem;">Тональность и подтон</p>
+              </div>
+              <div style="text-align: center; padding: 1rem; background-color: var(--background-secondary); border-radius: 0.5rem;">
+                <div style="width: 4rem; height: 4rem; border-radius: 9999px; background-color: ${typeof data.analysis.hair_color === 'string' ? data.analysis.hair_color : data.analysis.hair_color?.hex || '#4A4A4A'}; border: 2px solid var(--border-color); margin: 0 auto;"></div>
+                <p style="margin-top: 1rem; font-weight: 600;">Цвет волос</p>
+                <p style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">${typeof data.analysis.hair_color === 'string' ? data.analysis.hair_color : data.analysis.hair_color?.name || 'Не обнаружен'}</p>
+                <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.5rem;">Основной оттенок</p>
+              </div>
+              <div style="text-align: center; padding: 1rem; background-color: var(--background-secondary); border-radius: 0.5rem;">
+                <div style="width: 4rem; height: 4rem; border-radius: 9999px; background-color: ${data.analysis.color_type === 'warm' ? '#FFA07A' : '#87CEEB'}; border: 2px solid var(--border-color); margin: 0 auto;"></div>
+                <p style="margin-top: 1rem; font-weight: 600;">Тип цвета</p>
+                <p style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">${data.analysis.color_type === 'warm' ? 'Тёплый' : data.analysis.color_type === 'cool' ? 'Холодный' : 'Нейтральный'}</p>
+                <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.5rem;">Цветовая температура</p>
+              </div>
+            </div>
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+              <h5 style="margin-bottom: 1rem; font-size: 1.1rem;">Подробный анализ</h5>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                ${Object.entries(data.analysis.metrics || {}).map(([key, value]) => `
+                  <div style="padding: 0.75rem; background-color: var(--background-secondary); border-radius: 0.5rem;">
+                    <p style="font-size: 0.875rem; font-weight: 500;">${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                    <p style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">${value}</p>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
           </div>
         `;
 
@@ -152,11 +193,11 @@ import Layout from "../layouts/Layout.astro";
         const imagesHtml = `
           <div style="margin-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
             <div style="padding: 1rem; background-color: var(--background); border-radius: 0.5rem;">
-              <h4 style="margin-bottom: 0.5rem;">Detected Face</h4>
+              <h4 style="margin-bottom: 0.5rem;">Обнаруженное лицо</h4>
               <img src="${API_URL}${data.images.face}" alt="Detected face" style="width: 100%; border-radius: 0.5rem;" />
             </div>
             <div style="padding: 1rem; background-color: var(--background); border-radius: 0.5rem;">
-              <h4 style="margin-bottom: 0.5rem;">Virtual Try-On</h4>
+              <h4 style="margin-bottom: 0.5rem;">Виртуальная пробная покраска</h4>
               <img src="${API_URL}${data.images.result}" alt="Virtual try-on result" style="width: 100%; border-radius: 0.5rem;" />
             </div>
           </div>
@@ -165,10 +206,10 @@ import Layout from "../layouts/Layout.astro";
         resultsContainer.innerHTML = resultsHtml + analysisHtml + imagesHtml;
       } catch (error) {
         console.error('Error:', error);
-        alert('Failed to analyze image. Please try again.');
+        alert('Не удалось проанализировать изображение. Пожалуйста, попробуйте снова.');
       } finally {
         analyzeBtn.disabled = false;
-        analyzeBtn.textContent = 'Analyze Photo';
+        analyzeBtn.textContent = 'Анализ фото';
       }
     });
 

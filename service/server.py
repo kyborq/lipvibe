@@ -1,11 +1,12 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Query
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 import io
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 import uuid
+import sqlite3
 
 from analysis.face_crop import crop_face
 from analysis.recommender import recommend_lipsticks
@@ -27,10 +28,29 @@ app.add_middleware(
 TEMP_DIR = "temp"
 os.makedirs(TEMP_DIR, exist_ok=True)
 
+def get_db_connection():
+    conn = sqlite3.connect('database/lipsticks.db')
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def check_and_initialize_data():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Check if we have any data
+    cursor.execute("SELECT COUNT(*) FROM lipsticks")
+    count = cursor.fetchone()[0]
+    
+    if count == 0:
+        # Initialize database with default data
+        initialize_database()
+    
+    conn.close()
+
 @app.on_event("startup")
 async def startup_event():
     """Инициализация при запуске сервера"""
-    initialize_database()
+    check_and_initialize_data()
 
 @app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
@@ -77,6 +97,46 @@ async def analyze_image(file: UploadFile = File(...)):
         }
         
         return JSONResponse(content=response)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
+
+@app.get("/lipsticks")
+async def get_lipsticks(color: Optional[str] = Query(None, description="Filter by hex color")):
+    """Получение списка помад с возможностью фильтрации по цвету"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        if color:
+            # Convert hex to RGB for comparison
+            color = color.lstrip('#')
+            r, g, b = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
+            
+            # Query with color similarity
+            cursor.execute("""
+                SELECT name, brand, hex, description
+                FROM lipsticks
+                WHERE ABS(CAST(substr(hex, 2, 2) AS INTEGER) - ?) <= 20
+                AND ABS(CAST(substr(hex, 4, 2) AS INTEGER) - ?) <= 20
+                AND ABS(CAST(substr(hex, 6, 2) AS INTEGER) - ?) <= 20
+                ORDER BY (
+                    ABS(CAST(substr(hex, 2, 2) AS INTEGER) - ?) +
+                    ABS(CAST(substr(hex, 4, 2) AS INTEGER) - ?) +
+                    ABS(CAST(substr(hex, 6, 2) AS INTEGER) - ?)
+                )
+                LIMIT 10
+            """, (r, g, b, r, g, b))
+        else:
+            cursor.execute("SELECT name, brand, hex, description FROM lipsticks LIMIT 10")
+        
+        lipsticks = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        
+        return JSONResponse(content={"lipsticks": lipsticks})
         
     except Exception as e:
         return JSONResponse(
