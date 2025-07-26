@@ -1,5 +1,9 @@
 # LipVibe
 
+<img width="1280" height="853" alt="image" src="https://github.com/user-attachments/assets/1e57a543-9fb4-4428-b3ff-3c7fc52ba4c7" />
+
+<img width="1280" height="853" alt="image" src="https://github.com/user-attachments/assets/97246fc3-f9b1-4007-9c0d-890961aad75c" />
+
 ## Описание
 
 LipVibe - это комплексное решение для анализа цветовых характеристик губ и подбора губной помады. Проект состоит из двух основных компонентов:
@@ -105,6 +109,3 @@ npm run dev
 - Рекомендации брендов
 - Сохранение истории подборов
 
-## Лицензия
-
-[Укажите вашу лицензию]
